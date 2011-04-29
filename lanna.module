@@ -1,0 +1,219 @@
+<?php
+
+/**
+ * Implementations of hook_perm().
+ */
+
+function lanna_perm() {
+  return array('administer lanna');
+}
+/**
+ * Implementaions of hook_init().
+ */
+ 
+function lanna_init() {
+
+}
+/**
+ * Implementations of hook_menu().
+ */
+function lanna_menu() {
+  $items['admin/settings/lanna'] = array(
+    'title' =>  'Lanna',
+    'description' => t('Check in application for Facebook'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('lanna_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'lanna.admin.inc',
+  );
+
+  $items['lanna/register'] = array(
+    'title' => t('Register'),
+    'description' => t('Register facebook data.'),
+    'page callback' => 'lanna_register',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'lanna.pages.inc',
+  );
+
+  $items['lanna/save'] = array(
+    'title' => t('Save'),
+    'description' => t('Save checkin data'),
+    'page callback' => 'lanna_save',
+    'access callback' => 'lanna_user_access',
+    'type' => MENU_CALLBACK,
+  );
+  $items['lanna'] = array(
+    'title' => t('Lanna Sticker'),
+    'description' => t('Lanna the pretty'),
+    'page callback' => 'lanna_choose_photos',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+    'file' => 'lanna.pages.inc',
+  );
+  return $items;
+}
+
+/**
+ * Access callback for save data.
+ * TODO
+ */
+function lanna_user_access() {
+  return TRUE;
+}
+
+/**
+ * Access callback for QR service.
+ * TODO
+ */
+
+/**
+ * Implementation of hook_cron().
+ */
+function lanna_cron() {
+
+}
+
+
+/**
+ * Implementation of hook_load().
+ */
+function lanna_load($node) {
+
+}
+
+/**
+ * Implementation of hook_insert().
+ */
+function lanna_insert($node) {
+
+}
+
+/**
+ * Implementation of hook_update().
+ */
+function lanna_update($node) {
+
+}
+
+/**
+ * Implementation of hook_delete().
+ */
+function lanna_delete($node) {
+
+}
+
+/**
+ * Implementation of hook_view().
+ */
+function lanna_view($node, $teaser = FALSE, $page = FALSE) {
+
+}
+
+/**
+ * Debug message.
+function dm($msg) {
+  drupal_set_message((is_object($msg) || is_array($msg)) ? '<pre>'. print_r($msg, 1) .'</pre>' : $msg);
+}
+*/
+
+/**
+ * Facebook register.
+ * TODO
+ */
+function lanna_register() {
+  $me = lanna_facebook_login();
+  
+  // Login success.
+  if ($me) { 
+    dm($me);
+    
+    // Is fbuid this registered?
+    if (lanna_is_registered($me['id']) == FALSE) {
+      // Register new user account.
+      $account = array(
+        'name' => $me['id'],
+        'email' => $me['email'],
+        'pass' => md5($me['id']),
+      );
+    }
+    
+    drupal_goto('lanna');
+    return;
+  }
+  
+  drupal_set_message(t('Login to facebook failed. Something wrong.'), 'error');
+}
+
+function lanna_is_registered($fbuid) {
+
+}
+
+/**
+ * Get facebook object.
+ */
+function lanna_facebook() {
+  require_once drupal_get_path('module', 'lanna') .'/lib/facebook.php';
+   
+  $appId = variable_get('lanna_app_api_key', '');
+  $secret = variable_get('lanna_app_secret_key', '');
+  
+  $facebook = new Facebook(array(
+    'appId'  => $appId,
+    'secret' => $secret,
+    'cookie' => true,
+  ));
+  
+  return $facebook;
+}
+
+/**
+ * Facebook login.
+ */
+function lanna_facebook_login($next='lanna') {
+  $facebook = lanna_facebook();
+  $session = $facebook->getSession();
+  $me = null;
+  // Session based API call.
+  if ($session) {
+    try {
+      $me = $facebook->api('/me');
+    } catch (FacebookApiException $e) {
+      error_log($e);
+    }
+  } 
+
+  // Authenticate permissions.
+  if (!$me) {
+    $perms = array(
+      'user_photos',
+    );
+    $absolute = TRUE; 
+    $query = '';
+    if($_REQUEST['theme']) {
+      $query = 'theme='.$_REQUEST['theme'];
+      $absolute = FALSE;
+    }
+    //drupal_set_message('next = '. $next); 
+    $loginUrl = $facebook->getLoginUrl(array(
+      'canvas' => 1,
+      'fbconnect' => 0,
+      'req_perms' => implode(',', $perms),
+      //'next' => url($next, array('absolute' => $absolute, 'query' => $query)),
+      'cancel_url' => url('<front>', array('absolute' => TRUE)),
+    ));
+    $js = 'top.location.href="'. $loginUrl .'"';
+    drupal_add_js(array('lanna' =>  array('loginUrl' => $loginUrl)), 'setting');
+    drupal_add_js($js, 'inline'); 
+  }
+  return $me;
+}
+
+/**
+ * Get Facebook uid.
+ */
+function lanna_get_fbuid() {
+  $me = lanna_facebook_login();
+  return $me['id'];
+}

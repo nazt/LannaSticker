@@ -1,0 +1,269 @@
+#fb-photos {
+  width: 880px;
+  min-height: 150px;
+  float: left;
+}
+#fb-photos #album_content {
+  float: left;
+}
+#fb-photos .fb-picture-div {
+  float: left;
+  cursor: pointer;
+  width: 150px;
+  height: 150px;
+  padding: 20px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  text-align: center;
+  background: url("../images/block-bg.png");
+  vertical-align:middle;
+  overflow: hidden;
+}
+#fb-photos .hover {
+  background: #FF530F;
+}
+#fb-photos .fb-picture-div img, #review-photos div.review-photo img {
+  border: 5px solid #fff;
+  vertical-align:middle;
+}
+.fb-thumb {
+  width: 136px;
+  text-align: center;
+}
+#select-photos li {
+  list-style: none;
+  overflow: hidden;
+}
+
+.fb-album-detail {
+  margin-left: 166px;
+}
+
+#fb-albums {
+  float: left;
+  width: 600px;
+  min-height: 150px;
+}
+#fb-albums .fb-album {
+  cursor: pointer;
+  border: 3px solid #999;
+}
+#fb-albums .fb-album:hover {
+
+}
+#fb-albums .fb-album .fb-thumb {
+  background: url("../images/bg-album.png") no-repeat right top;
+  padding: 12px 18px 5px 10px;
+}
+#fb-albums .fb-album img, #server-result .server-item img {
+margin:0;padding:0;
+  border: 4px solid #fff;
+}
+#fb-albums .fb-album h3 {
+  color:#3B5998;
+  margin:0;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+#fb-albums .fb-album h3:hover {
+  text-decoration: underline;
+}
+
+#fb-albums .fb-album p {
+  margin: 0;
+  font-size: 12px;
+  color:#666;
+}
+
+#review-photos {
+  overflow: hidden;
+  min-height: 150px;
+}
+#review-photos img {
+  /*padding: 10px;*/
+}
+
+#tab-nav li {
+  float: left;
+  list-style: none;
+  padding: 10px;
+}
+
+#review-photos img {
+  cursor: pointer;
+}
+
+.tab-el {
+  display: none;
+}
+
+.tab-child {
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+#tab-nav li a {
+  cursor: default;
+}
+
+/*
+** tuck
+*/
+
+/* album */
+
+#fb-albums {width: 880px;}
+
+#fb-albums .fb-album, #server-result .server-item {
+  border: 0;
+  float: left;
+  width: 155px;
+  height: 200px;
+  text-align: center;
+}
+
+
+
+#fb-albums h3.choose-album, .section-checkin h3.choose-photo, #review-photos h3.review-photo-for-send {
+	background: url("../images/h3-choosealbum.png") no-repeat;
+	display: block;
+	height: 50px;
+	text-indent: -9999px;
+	overflow: hidden;
+	width: 175px;
+}
+
+.section-checkin h1#page-title {
+	background: url("../images/h1-checkin.png") no-repeat;
+	display: block;
+	height: 60px;
+	text-indent: -9999px;
+	margin-bottom: 0;
+	overflow: hidden;
+	width: 120px;
+}
+
+/* choose photo */
+
+.section-checkin h3.choose-photo {
+	background: url("../images/h3-choose_pic.png") no-repeat;
+	height: 55px;
+	width: 125px;
+}
+
+#tab-nav li#li-show-all-albums a {
+	background: url("../images/bt-backto_album.png") no-repeat;
+	cursor: pointer;
+	display: block;
+	height: 50px;
+	text-indent: -9999px;
+	overflow: hidden;
+	width: 158px;
+}
+
+#tab-nav li#li-show-all-albums a:hover {
+	background-position: 0 -50px;
+}
+
+.section-checkin .tab-nav {clear: both; float: right; margin: 0 0 20px;}
+
+.section-checkin .tab-nav li {
+	display: inline;
+	padding: 0 0 0 10px;
+}
+
+p.selected-photos {text-align: right; margin: 0 0 0.5em;}
+
+#select-photos ul.tab-nav {margin: 30px 0 0;}
+
+/* review photo */
+.review-photo {
+	position: relative;
+}
+
+.review-photo img.delete {
+  cursor:pointer;
+	border: 0 !important;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+#review-photos h3.review-photo-for-send {
+	background: url("../images/h3-all_pic.png") no-repeat;
+	height: 50px;
+	width: 265px;
+}
+
+/* checkin */
+#server-result {clear: both;}
+
+#server-result .server-item {
+	margin-bottom: 10px;
+	padding: 10px;
+	overflow: hidden;
+	width: 860px;
+}
+
+#server-result .server-item img {
+	float: left;
+	margin-right: 10px;
+}
+
+#server-result .server-item .publish-button {font-style: italic;}
+
+#server-result .server-item .publish-button, #server-result .server-item .place-info {
+	margin-left: 150px;
+}
+
+.publish-button {
+  background-color: #5B74A8;
+  border-color: #29447E #29447E #1A356E;
+  border-style: solid;
+  border-width: 1px;
+  color: white;
+  cursor: pointer;
+  display: block;
+  width: 55px;
+  text-align: center;
+  font-style: normal !important;
+  font-weight: bold;
+  padding: 5px 10px;
+  margin-top: 15px;
+}
+
+.decode-error {
+	float: left;
+  background-color: #5B74A8;
+  border-color: #29447E #29447E #1A356E;
+  border-style: solid;
+  border-width: 1px;
+  color: white;
+  cursor: pointer;
+  display: block;
+  width: 200px;
+  text-align: center;
+  font-style: normal !important;
+  font-weight: bold;
+  padding: 5px 10px;
+  margin-top: 15px;
+}
+
+#review-photos div.review-photo {
+	padding: 20px;
+}
+	#review-photos div.review-photo img {
+		width: 606px;
+	}
+/* @anusorn */
+#select-photos {
+  background: url(../images/block-bg.png);
+}
+
+.messages {
+ display:none;
+}

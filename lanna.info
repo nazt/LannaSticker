@@ -1,0 +1,6 @@
+; $Id$ lanna.info
+name = Lanna 
+description = Lanna sticker facebook 
+core = 6.x
+version = 6.x-1.0-dev
+package = GoNorth
