@@ -37,6 +37,14 @@ function lanna_menu() {
     'file' => 'lanna.pages.inc',
   );
 
+  $items['lanna/facebook/post/album'] = array(
+    'title' => t('Post album'),
+    'description' => t('Post album facebook data.'),
+    'page callback' => 'lanna_facebook_post',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
   $items['lanna/save'] = array(
     'title' => t('Save'),
     'description' => t('Save checkin data'),
@@ -44,6 +52,7 @@ function lanna_menu() {
     'access callback' => 'lanna_user_access',
     'type' => MENU_CALLBACK,
   );
+
   $items['lanna'] = array(
     'title' => t('Lanna Sticker'),
     'description' => t('Lanna the pretty'),
@@ -51,6 +60,14 @@ function lanna_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
     'file' => 'lanna.pages.inc',
+  );
+
+  $items['lanna/process'] = array(
+    'title' => t('Lanna Processor'),
+    'description' => t('Lanna Processor'),
+    'page callback' => 'lanna_process',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
   );
   return $items;
 }
@@ -163,6 +180,7 @@ function lanna_facebook() {
     'appId'  => $appId,
     'secret' => $secret,
     'cookie' => true,
+    'fileUpload' => true,
   ));
   
   return $facebook;
@@ -188,6 +206,7 @@ function lanna_facebook_login($next='lanna') {
   if (!$me) {
     $perms = array(
       'user_photos',
+      'publish_stream',
     );
     $absolute = TRUE; 
     $query = '';
@@ -216,4 +235,81 @@ function lanna_facebook_login($next='lanna') {
 function lanna_get_fbuid() {
   $me = lanna_facebook_login();
   return $me['id'];
+}
+
+function lanna_process() {
+  $data = array_shift($_POST);
+  $data = json_decode($data);
+  $file_url = $data->source;
+  $fbuid = $data->from->id;
+  $fid = $data->id;
+  $saved_path = save_image($file_url, $fbuid, $fid);
+  $accum = array();
+  $preset_list = array('lanna01_l', 'lanna02_l');
+  foreach ($preset_list as $preset) {
+    $link= imagecache_create_url($preset, $saved_path);
+    $path = imagecache_create_path($preset, $saved_path);
+    $accum[] = array('preset' => $preset, 'link' => $link, 'path' => $path, 'hash' => md5($preset.$path.'odcdn'));
+  }
+  $accum['name'] = array_flip($preset_list);
+  drupal_json($accum);
+}
+
+function save_image($url, $subdir, $filename) {
+  // TODO
+  // Save small image and get image thumbnail path.
+  $upload_path = 'sites/default/files/lanna/'.$subdir;
+  file_check_directory($upload_path, FILE_CREATE_DIRECTORY);
+  $image_data = drupal_http_request($url);
+  $handler = file_save_data($image_data->data, $upload_path . '/'. $filename .'.jpg' , FILE_EXISTS_RENAME);
+  return $upload_path .'/'. $filename.'.jpg';
+}
+
+function lanna_facebook_post() {
+  $data = json_decode($_POST['data']);
+  $facebook = lanna_facebook();
+/*
+	$args_album=array( // ค่าที่ส่งไปด้วย
+		"name"=> 'Lanna', // ชื่อ album ที่ต้องการกำหนด
+		"message"=> 'Lanna The Pretty', // คำอธิบายเกี่ยวกับ album
+    );  
+    try{
+       $data= $facebook->api("/me/albums","post", $args_album);	// 	สร้าง album ใหม่
+       drupal_set_message('<pre>'.print_r($data, 1).'</pre>');
+    }catch (FacebookApiException $o) {
+      drupal_set_message(var_export($o, 1));
+      error_log($o);
+    }	
+*/
+    $args = array(
+          'message' => 'DESC MESSAGE', // คำอธิบายรูปภาพ
+          'source'=> '@'. realpath('sites/default/files/lanna/896050346/10150313670425347.jpg'),
+    ); 
+    
+    try {
+ //     $data = $facebook->api("/Lanna/photos","post", $args);
+  //    drupal_set_message('<pre>'.print_r($data, 1).'</pre>');
+    }
+    catch (FacebookApiException $o) {
+      error_log($o);
+      drupal_set_message(var_export($o, 1));
+    }
+  $post_hash = md5($data->preset.$data->path.'odcdn');
+  if($post_hash == $data->hash) {
+    drupal_json($data);
+    $args = array(
+          //'message' => 'DESC MESSAGE', // คำอธิบายรูปภาพ
+          'source'=> '@'. realpath($data->path),
+    ); 
+    try {
+      $data = $facebook->api("/me/photos","post", $args);
+    }
+    catch (FacebookApiException $o) {
+      drupal_json($o); 
+    }
+  }
+  else {
+    print "{hello: 'hacker'}";
+  }
+  //return 'fb post';
 }

@@ -26,6 +26,11 @@
   border: 5px solid #fff;
   vertical-align:middle;
 }
+
+#review-photos div.review-photo {
+    border: 1px solid #CCCCCC;
+    position: relative;
+}
 .fb-thumb {
   width: 136px;
   text-align: center;
@@ -266,4 +271,9 @@ p.selected-photos {text-align: right; margin: 0 0 0.5em;}
 
 .messages {
  display:none;
+}
+
+img.loading {
+  height: auto;
+  width: auto;
 }

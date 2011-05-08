@@ -10,6 +10,8 @@
   var span = $('<span />');
   var input= $('<input />');
   var loading ;
+  var presets = [];
+  var current_preset; 
 
   var Photo = {
     Album: {
@@ -83,7 +85,6 @@ function getAlbums() {
 
   loading.remove();
   });
-  //FB.Canvas.setSize();
 } /// getPhotos
 
 
@@ -97,9 +98,8 @@ function showAlbum(aid) {
   $('.album_name').html(album_name);
   $('#fb-photos').append(loading);
   photos.wait(function(photo) {
-		console.log(photo);
     FB.Array.forEach(photos['value'], function(photo) {
-      var photo = img.clone().addClass('fb-picture').attr({src: photo['src'], src_big: photo['src_big'], object_id: photo.object_id, pid: photo.pid, alt: photo['caption']});
+      var photo = img.clone().attr({src: photo['src'], object_id: photo.object_id, pid: photo.pid, alt: photo['caption']});
       div_img = div.clone().addClass('fb-picture-div');
       div_img.append(photo);
       album_content.append(div_img);
@@ -116,7 +116,6 @@ function showAlbum(aid) {
 
 function update_review_photo() {
   var n_select = $("#review-photos img.fb-photo-review").size();
-  $('#total-review-photos').html(' ('+ n_select +' รูป)');
   if (current_state == 2 && n_select) {
     $('.go-review-button-wrap').show();
   }
@@ -132,18 +131,10 @@ function update_review_photo() {
   }
 }
 
-function remove_review_photo(pid) {
-  delete(review_photos[pid]);
-  var selector = '#review-photos img#' +pid;
-  $(selector).parent('div').fadeOut('slow', function() {
-    $(this).remove();
-    update_review_photo();
-  });
-}
-
 function set_state(state) {
   current_state = state;
   $('.tab-nav li').hide();
+  $('#review-photos button').remove()
   switch(current_state) {
     case 1:
       if ($("#review-photos img.fb-photo-review").size()) {
@@ -155,7 +146,6 @@ function set_state(state) {
       if ($("#review-photos img.fb-photo-review").size()) {
         $('.go-review-button-wrap').show();
       }
-
       $('#show-all-albums-wrap').show();
       $('#fb-albums').hide();
       $('#fb-photos').show();
@@ -180,7 +170,6 @@ $('.show-all-albums').live('click', function(e) {
   $('#fb-photos').hide();
   $('#fb-albums').show();
   $('#album_content').html('');
-  //$('#album_content div.fb-picture-div').remove()
   $('#review-photos').hide();
   $('#select-photos').show();
   $( 'html, body' ).animate( { scrollTop: 0 }, 'fast' );
@@ -188,12 +177,33 @@ $('.show-all-albums').live('click', function(e) {
 
 $('.go-review-button').live('click', function(e) {
   set_state(3);
-  FB.Canvas.setSize({'height': 0});
   $('#review-photos').show();
   $('#fb-photos').hide();
   $('fb-albums').hide();
+  $.post("/lanna/process", review_photos, function(data) {
+      presets = data;
+      $.each(presets, function(k, v) {
+         console.log(v.link);
+         $('#review-photos').append($('<button />').html(k).attr('id', v.preset));
+      });
+     
+      $('.review-photo p img').eq(0).attr('src', presets[0].link);
+      current_preset = presets[0];
+   }, "json");
 });
 
+$('button').live('click', function(e) {
+  var self = $(this);
+  var psname = self.eq(0).attr('id');  
+  var preset;
+  if ( psname && psname in presets['name'] ) {
+    preset = presets[presets['name'][psname]]
+    current_preset = preset;
+    console.log(preset, current_preset, 'cur');
+    $('.review-photo p img')[0].src = preset.link;
+    
+  } 
+});
 
 // Click for choose album
 $('li.fb-album').live('click', function(e) {
@@ -207,33 +217,27 @@ $('li.fb-album').live('click', function(e) {
 // Test it
 $('.fb-picture-div').live('click', function(e) {
   var self = $(this);
-  self= self.children('img');
+  self = self.children('img');
   var self_photo = self;
   var photos = Photo.get($(self).attr('pid'));
-	$('.fb-picture-div').removeClass('hover');
+  $('.fb-picture-div').removeClass('hover');
   self.parent('div').addClass('hover');
   var pic_containner;
-
 	photos.wait(function(photo) {
 		FB.api('/'+ photo[0]['object_id'], function(data) {
 			var pid = photo[0].pid;
-			var src_big = data['images'][0]['source'];
-			//console.log(src_big, self_photo.attr('src_big'));
-			var picture = p.clone().append(img.clone().attr({src: self_photo.attr('src_big'), id: pid } ).addClass('fb-photo-review'));
-			var ex_pid = $('.review-photo img').attr('id');
+			var picture = p.clone().append(img.clone().attr({src: self_photo.attr('src_big'), id: pid}).addClass('fb-photo-review'));
 			pic_containner = div.clone().addClass('review-photo').append(picture);
-			pic_containner.append($('<span />').addClass('sp-bg'));
-				if($('.review-photo').size() == 0) {
-					$('#review-photos').append(pic_containner);
-				}
-				else {
-					$('.review-photo').remove();
-					$('#review-photos').append(pic_containner);
-				}
+			if($('.review-photo').size() == 0) {
+				$('#review-photos').append(pic_containner);
+			}
+			else {
+				$('.review-photo').remove();
+				$('#review-photos').append(pic_containner);
+			}
 			clear_review_object();
-			review_photos[pid] = 'src_big='+src_big+"&"+'src_small='+self.get(0).src;
+			review_photos[pid] = JSON.stringify(data); 
 			update_review_photo();
-			console.log(ex_pid, pid);
 		});
 	}); //end wait
 });
@@ -242,16 +246,16 @@ function clear_review_object() {
 		delete (review_photos[k]);
 	});
 }
-$('.delete').live('click', function(e) {
-  var self = $(this);
-  var rid = self.siblings('img').attr('id');
-  remove_review_photo(rid);
-
-});
 
 $('.go-checkin').live('click', function(e) {
+  console.log(review_photos, 'okay');
+  delete(current_preset['link']);
+  console.log(current_preset);
   set_state(0);
   var waiting = loading.clone();
+  $.post('/lanna/facebook/post/album', {data: JSON.stringify(current_preset)}, function(resp) {
+    console.log(resp);
+  }, 'json');
   $('#server-result').append(waiting);
   $('#fb-photos').hide();
   $('#fb-albums').hide();
@@ -263,55 +267,3 @@ $('.start-over').live('click', function(e) {
   window.location.reload();
 });
 
-function getCustomPlaceUIOption(img_src, img_info, img_title, support_url) {
-  var publish = {
-    method: 'stream.publish',
-    message: '',
-    attachment: {
-      name: img_title,
-      //caption: 'This is Caption',
-      description: (
-          img_info
-      ),
-      href: support_url,
-      media: [
-        {
-          type: 'image',
-          href: 'http://gonorththailand.com/',
-          src: img_src
-        }
-      ]
-    },
-    action_links: [
-      { text: 'ยืนยัน', href: support_url }
-    ],
-    user_prompt_message: 'Share your thoughts about PPic'
-    };
-  return publish;
-}
-function getUIOption(img_src, img_info, img_title) {
-  var publish = {
-    method: 'stream.publish',
-    message: 'This place is very coooool!!!!',
-    attachment: {
-      name: img_title,
-      //caption: 'This is Caption',
-      description: (
-          img_info
-      ),
-      href: 'http://www.gonorththailand.com/',
-      media: [
-        {
-          type: 'image',
-          href: 'http://www.gonorththailand.com/',
-          src: img_src
-        }
-      ]
-    },
-    action_links: [
-      { text: 'Visit', href: 'http://www.gonorththailand.com' }
-    ],
-    user_prompt_message: 'Share your thoughts about PPic'
-    };
-  return publish;
-}

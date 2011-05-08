@@ -7,7 +7,6 @@ function lanna_choose_photos() {
   drupal_add_css(drupal_get_path('module', 'lanna') . '/css/checkin.css');
   drupal_add_js(array('lanna' =>  array('path' => base_path().drupal_get_path('module', 'lanna'))), 'setting');
   // Check login.
-  //echo(print_r($_REQUEST, 1). print_r($_SERVER, 1));
 
   $me = lanna_facebook_login();
   $apiKey = variable_get('lanna_app_api_key', ''); 
@@ -61,15 +60,17 @@ function lanna_choose_photos() {
           <button class="go-review-button">ขั้นตอนต่อไป</button>
         </li> 
         <li class='back-all-albums-wrap'>
-          <button class="show-all-albums">เลือกรูปเพิ่ม</button>
+          <button class="show-all-albums">เลือกรูปใหม่</button>
         </li>  
         <li class='go-checkin-wrap'>
-          <button class="go-checkin">เช็คอิน</button>
+          <button class="go-checkin">เอา!</button>
         </li>             
 
       </ul>  
     </div>
+
     <div style='clear:left'></div> 
+
     <div id='select-photos' class='tab-el active'>
       <div id='fb-albums' class= 'tab-child'>
         <h3 class='first-page-item choose-album'>เลือกอัลบัม</h3>
